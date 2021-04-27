@@ -1,0 +1,8 @@
+flask
+numpy
+torch
+transformers
+pysaucenao
+discord.py
+termcolor
+requests
