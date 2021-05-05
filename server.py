@@ -1,13 +1,14 @@
 import torch
 import traceback
+import re
 
 from flask import Flask
 from flask import request
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 # Load our model and use cuda if available
-model = GPT2LMHeadModel.from_pretrained('./model')
-tokenizer = GPT2Tokenizer.from_pretrained('./model')
+model = GPT2LMHeadModel.from_pretrained('./model-3')
+tokenizer = GPT2Tokenizer.from_pretrained('./model-3')
 if torch.cuda.is_available():
     device = torch.device("cuda")
 
@@ -29,7 +30,8 @@ def response(msg):
 
     generated = torch.tensor(tokenizer.encode(prompt)).unsqueeze(0)
     generated = generated.to(device)
-    sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=300, top_p=0.95,
+    maxlen = 300 + promptlen
+    sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=maxlen, top_p=0.95, temperature=0.9,
                                     num_return_sequences=1)
 
     for i, sample_output in enumerate(sample_outputs):
@@ -50,13 +52,13 @@ def topten(msg):
 
     generated = torch.tensor(tokenizer.encode(prompt)).unsqueeze(0)
     generated = generated.to(device)
-    sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=300, top_p=0.95,
+    sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=50, top_p=0.95, temperature=0.9,
                                     num_return_sequences=10)
 
     for i, sample_output in enumerate(sample_outputs):
         line = tokenizer.decode(sample_output, skip_special_tokens=True)
         line = line[promptlen:]
-        line = ''.join([i for i in line if not i.isdigit()])
+        line = re.sub(r"[0-9][\.)]{1,2}", "", line)
         line = line.replace("\n", " ")
         output += "\n" + str((i+1)) + ". " + line
 
@@ -66,11 +68,11 @@ def topten(msg):
 def subvert():
     global model, tokenizer
     output = ""
-    prompt = "<|bos|>I can't believe that "
+    prompt = "<|bos|>I can't believe "
 
     generated = torch.tensor(tokenizer.encode(prompt)).unsqueeze(0)
     generated = generated.to(device)
-    sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=300, top_p=0.95,
+    sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=300, top_p=0.95, temperature=0.9,
                                     num_return_sequences=1)
 
     for i, sample_output in enumerate(sample_outputs):

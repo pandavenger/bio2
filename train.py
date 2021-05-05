@@ -13,7 +13,7 @@ from transformers import Trainer, TrainingArguments
 from transformers import get_linear_schedule_with_warmup
 
 bs = 2
-pretrained_model = 'gpt2-medium'
+pretrained_model = 'distilgpt2'
 
 # Now we'll create a list to iterate through.
 with open('data/quotes_raw.json') as json_file:
@@ -121,12 +121,12 @@ np.random.seed(seed_val)
 torch.manual_seed(seed_val)
 torch.cuda.manual_seed_all(seed_val)
 
-epochs = 4
+epochs = 883
 warmup_steps = 1e2
 sample_every = 100
 
 optimizer = AdamW(model.parameters(),
-                  lr=8e-4,
+                  lr=5e-5,
                   eps=1e-8
                   )
 
@@ -192,6 +192,7 @@ for epoch_i in range(0, epochs):
                 generated,
                 do_sample=True,
                 top_k=50,
+                temperature=0.9,
                 max_length=200,
                 top_p=0.95,
                 num_return_sequences=1
@@ -255,9 +256,12 @@ for epoch_i in range(0, epochs):
         }
     )
 
+    if avg_train_loss < 0.25:
+        break
+
 print(f'Total training took {format_time(time.time() - total_t0)}')
 
-output_dir = './model'
+output_dir = './model-3'
 
 # Save a trained model, configuration and tokenizer using `save_pretrained()`.
 # They can then be reloaded using `from_pretrained()`
@@ -277,6 +281,7 @@ sample_outputs = model.generate(
     generated,
     do_sample=True,
     top_k=50,
+    temperature=0.9,
     max_length=300,
     top_p=0.95,
     num_return_sequences=10
