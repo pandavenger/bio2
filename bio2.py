@@ -32,12 +32,27 @@ saucenao = SauceNao(
 )
 
 actionqueue = []
+channelpositions = {}
 performing_action = False
 
 
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
+
+
+# @client.event
+# async def on_guild_channel_update(before, after):
+#     global channelpositions
+#
+#     gid = after.guild.id
+#     cid = after.id
+#
+#     if gid in channelpositions and cid in channelpositions[gid] and channelpositions[gid][cid]["position"] is not after.position:
+#         try:
+#             await after.edit(position=channelpositions[gid][cid]["position"], category=before.category)
+#         except Exception as e:
+#             print(e)
 
 
 @client.event
@@ -103,8 +118,6 @@ async def on_message(message):
                 actionqueue.append(BioAction("jeb!.", message.channel))
             else:
                 actionqueue.append(BioAction("cum!.", message.channel))
-        elif "code" in msg_text.split():
-            actionqueue.append(BioAction("code retard " * random.randint(10, 30), message.channel))
         else:
             msg_text = msg_text.replace('bio2', '')
             actionqueue.append(
@@ -355,22 +368,37 @@ async def do_action():
 
 @client.event
 async def on_ready():
+    global channelpositions
+
     await client.change_presence(activity=discord.Game(name=random.choice(config.bio_gametext)))
     #
     cprint("Bot Online", 'green')
     cprint("name: {}".format(client.user.name), 'green')
     cprint("ID: {}".format(client.user.id), 'green')
     # await client.user.edit(avatar=config.pfpDefault)
+    for server in client.guilds:
+        cprint(server.name, 'yellow')
+        channelpositions[server.id] = {}
+        for channel in server.text_channels:
+            channelpositions[server.id][channel.id] = {}
+            channelpositions[server.id][channel.id]['position'] = channel.position
+            channelpositions[server.id][channel.id]['category'] = channel.category
+            cprint("{} p{} c{}".format(channel.name, channelpositions[server.id][channel.id]['position'], channelpositions[server.id][channel.id]['category']), 'yellow')
 
 
 async def list_servers():
+    global channelpositions
+
     await client.wait_until_ready()
     while not client.is_closed:
         await client.change_presence(game=discord.Game(name=random.choice(config.bio_gametext)))
         cprint("Current servers:", 'green')
-        for server in client.servers:
+        for server in client.guilds:
             cprint(server.name, 'yellow')
-        await asyncio.sleep(600)
-
+            channelpositions[server.id] = {}
+            for channel in server.channels:
+                channelpositions[server.id][channel.id] = channel.position
+                cprint("{} {}".format(channel.name, channel.position), 'yellow')
+        await asyncio.sleep(60)
 
 client.run(config.TOKEN)

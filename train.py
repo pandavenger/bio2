@@ -13,7 +13,7 @@ from transformers import Trainer, TrainingArguments
 from transformers import get_linear_schedule_with_warmup
 
 bs = 2
-pretrained_model = 'distilgpt2'
+pretrained_model = 'microsoft/DialoGPT-small'
 
 # Now we'll create a list to iterate through.
 with open('data/quotes_raw.json') as json_file:
@@ -256,12 +256,12 @@ for epoch_i in range(0, epochs):
         }
     )
 
-    if avg_train_loss < 0.25:
+    if avg_train_loss < 0.20:
         break
 
 print(f'Total training took {format_time(time.time() - total_t0)}')
 
-output_dir = './model-3'
+output_dir = './model-5'
 
 # Save a trained model, configuration and tokenizer using `save_pretrained()`.
 # They can then be reloaded using `from_pretrained()`

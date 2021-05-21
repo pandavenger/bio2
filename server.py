@@ -47,6 +47,9 @@ def response(msg):
 def topten(msg):
     global model, tokenizer
     output = ""
+    p = re.compile(r'.*reasons?(.*)', re.IGNORECASE)
+    msg = re.search(p, msg).group(1)
+
     prompt = "<|bos|>" + msg + "\n"
     promptlen = len(prompt) - 7
 
