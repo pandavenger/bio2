@@ -4,6 +4,8 @@
 /venv/*
 /.idea/*
 /__pycache__/*
-config.py
-data.json
+config.json
 preprocess.py
+test.py
+bio2.db
+rhinno/*

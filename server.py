@@ -1,14 +1,15 @@
 import torch
 import traceback
 import re
+from aiohttp import web
 
-from flask import Flask
-from flask import request
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
+from transformers import GPTNeoForCausalLM, GPT2Tokenizer
+
+routes = web.RouteTableDef()
 
 # Load our model and use cuda if available
-model = GPT2LMHeadModel.from_pretrained('./model-3')
-tokenizer = GPT2Tokenizer.from_pretrained('./model-3')
+model = GPTNeoForCausalLM.from_pretrained('./model-8')
+tokenizer = GPT2Tokenizer.from_pretrained('./model-8')
 if torch.cuda.is_available():
     device = torch.device("cuda")
 
@@ -20,38 +21,45 @@ else:
     print('No GPU available, using the CPU instead.')
     device = torch.device("cpu")
 model.to(device)
+p = re.compile(r'<\|bos\|>((?s:.)*?)<\|eos\|>', re.IGNORECASE)
+p2 = re.compile(r'.*reasons?(.*)', re.IGNORECASE)
 
 
 def response(msg):
-    global model, tokenizer
+    global model, tokenizer, p
     output = ""
-    prompt = "<|bos|>" + msg + "\n"
-    promptlen = len(prompt) - 7
+    prompt = "<|bos|>" + msg
+    promptlen = len(msg)-1
 
     generated = torch.tensor(tokenizer.encode(prompt)).unsqueeze(0)
     generated = generated.to(device)
-    maxlen = 300 + promptlen
+    maxlen = 150 + promptlen
     sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=maxlen, top_p=0.95, temperature=0.9,
                                     num_return_sequences=1)
 
     for i, sample_output in enumerate(sample_outputs):
-        output = tokenizer.decode(sample_output, skip_special_tokens=True)
-        output = output[promptlen:]
-    output = output.strip()
+        output = tokenizer.decode(sample_output, skip_special_tokens=False)
+        m = re.match(p, output)
+        if m:
+            output = m.group(1)
+        else:
+            output = None
+
     if output:
-        return output
+        output = output.strip()
+        return output[promptlen:]
     else:
         return response(msg)
 
 
 def topten(msg):
-    global model, tokenizer
+    global model, tokenizer, p2
     output = ""
-    p = re.compile(r'.*reasons?(.*)', re.IGNORECASE)
-    msg = re.search(p, msg).group(1)
 
-    prompt = "<|bos|>" + msg + "\n"
-    promptlen = len(prompt) - 7
+    msg = re.search(p2, msg).group(1)
+
+    prompt = "<|bos|>" + msg
+    promptlen = len(msg)-1
 
     generated = torch.tensor(tokenizer.encode(prompt)).unsqueeze(0)
     generated = generated.to(device)
@@ -59,11 +67,13 @@ def topten(msg):
                                     num_return_sequences=10)
 
     for i, sample_output in enumerate(sample_outputs):
-        line = tokenizer.decode(sample_output, skip_special_tokens=True)
-        line = line[promptlen:]
-        line = re.sub(r"[0-9][\.)]{1,2}", "", line)
-        line = line.replace("\n", " ")
-        output += "\n" + str((i+1)) + ". " + line
+        line = tokenizer.decode(sample_output, skip_special_tokens=False)
+        m = re.match(p, line)
+        if m:
+            line = m.group(1)
+            line = re.sub(r"[0-9][\.)]{1,2}", "", line)
+            line = line.replace("\n", " ")
+            output += "\n" + str((i+1)) + ". " + line
 
     return output.strip()
 
@@ -75,24 +85,24 @@ def subvert():
 
     generated = torch.tensor(tokenizer.encode(prompt)).unsqueeze(0)
     generated = generated.to(device)
-    sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=300, top_p=0.95, temperature=0.9,
+    sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=100, top_p=0.95, temperature=0.9,
                                     num_return_sequences=1)
 
     for i, sample_output in enumerate(sample_outputs):
-        output = tokenizer.decode(sample_output, skip_special_tokens=True)
+        output = tokenizer.decode(sample_output, skip_special_tokens=False)
+        m = re.match(p, output)
+        if m:
+            output = m.group(1)
+        else:
+            output = 'Snape Kills Makima'
 
     return output.strip()
 
 
-# server
-app = Flask(__name__)
-app.debug = False
-
-
-@app.route('/', methods=['GET'])
-def request_message():
-    raw_text = request.args.get("msg") and request.args.get("msg") or ""
-    gentype = int(request.args.get("type") and request.args.get("type") or 1)
+@routes.get('/')
+async def request_message(request):
+    raw_text = request.rel_url.query['msg'] or ""
+    gentype = int(request.rel_url.query['type'] or 1)
 
     result = ""
     try:
@@ -109,8 +119,9 @@ def request_message():
         tb = traceback.format_exc()
         print(tb)
 
-    return result, 200, {'Content-Type': 'application/json; charset=utf-8'}
-
+    return web.Response(text=result)
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8080, threaded=False)
+    app = web.Application()
+    app.add_routes(routes)
+    web.run_app(app)

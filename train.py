@@ -4,6 +4,7 @@ import numpy as np
 import random
 import time
 import torch
+import textwrap
 
 from torch.utils.data import Dataset, DataLoader, RandomSampler, SequentialSampler
 from torch.utils.data import random_split
@@ -16,14 +17,20 @@ bs = 2
 pretrained_model = 'microsoft/DialoGPT-small'
 
 # Now we'll create a list to iterate through.
-with open('data/quotes_raw.json') as json_file:
+with open('data/quotes_raw2.json') as json_file:
     data = json.load(json_file)
+
+torch.cuda.empty_cache()
 
 quotes = []
 for i in data:
     text = i['text']
     if len(text) < 512:
         quotes.append(text)
+    else:
+        trquotes = textwrap.wrap(text, 200)
+        for trquote in trquotes:
+            quotes.append(trquote)
 
 gpt2tokenizer = GPT2Tokenizer.from_pretrained(pretrained_model,
                                               bos_token='<|bos|>',
@@ -123,7 +130,7 @@ torch.cuda.manual_seed_all(seed_val)
 
 epochs = 883
 warmup_steps = 1e2
-sample_every = 100
+sample_every = 500
 
 optimizer = AdamW(model.parameters(),
                   lr=5e-5,
@@ -192,7 +199,7 @@ for epoch_i in range(0, epochs):
                 generated,
                 do_sample=True,
                 top_k=50,
-                temperature=0.9,
+                temperature=1.0,
                 max_length=200,
                 top_p=0.95,
                 num_return_sequences=1
@@ -261,7 +268,7 @@ for epoch_i in range(0, epochs):
 
 print(f'Total training took {format_time(time.time() - total_t0)}')
 
-output_dir = './model-5'
+output_dir = './model-11'
 
 # Save a trained model, configuration and tokenizer using `save_pretrained()`.
 # They can then be reloaded using `from_pretrained()`
@@ -281,7 +288,7 @@ sample_outputs = model.generate(
     generated,
     do_sample=True,
     top_k=50,
-    temperature=0.9,
+    temperature=1.0,
     max_length=300,
     top_p=0.95,
     num_return_sequences=10
