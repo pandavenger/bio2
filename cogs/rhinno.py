@@ -29,7 +29,7 @@ class RhinnoCog(commands.Cog):
         rfile = random.choice(files)
         show = os.path.basename(Path(rfile).parent)
 
-        await ctx.message.channel.send("omw to beat up someone from " + show + ", gimme a couple of minutes")
+        await ctx.message.channel.send("omw to beat up someone from " + show)
         async with ctx.message.channel.typing():
             await ctx.message.channel.send(file=discord.File(rfile))
 

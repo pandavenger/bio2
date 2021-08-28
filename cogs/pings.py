@@ -1,12 +1,14 @@
 from config import config, db
 import re
+import traceback
+import sys
 
 import discord
 from discord import Embed, Emoji
 from discord.ext import commands
 
 
-class EmotesCog(commands.Cog):
+class PingsCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -98,12 +100,19 @@ class EmotesCog(commands.Cog):
             return None
 
 
-    @commands.command(name='group-create', aliases=['gc'])
+    @commands.command(name='group-create', aliases=['gc'],
+                      brief="Create a Group",
+                      help="Create a Group. Use \"Name Goes Here\" for names with spaces.")
     async def _group_create(self, ctx, arg):
         if arg == "":
             return
 
         if ctx.author.bot:
+            return
+
+        group = self.get_group_by_name(arg)
+        if group is not None:
+            await ctx.message.channel.send("There already exists an active group with that name.")
             return
 
         if len(ctx.message.mentions) > 0:
@@ -114,7 +123,10 @@ class EmotesCog(commands.Cog):
         if group > 0:
             await ctx.message.channel.send(f"Group #{group} created with the name {arg}")
 
-    @commands.command(name='group-status', aliases=['gs'])
+    @commands.command(name='group-status', aliases=['gs'],
+                      brief="Get Group status",
+                      help="Get Group status. Does not ping Group Members."
+                           + "Use \"Name Goes Here\" for names with spaces.")
     async def _group_status(self, ctx, arg):
         if arg == "":
             return
@@ -146,7 +158,9 @@ class EmotesCog(commands.Cog):
         else:
             await ctx.message.channel.send("Group not found using the query " + arg)
 
-    @commands.command(name='group-delete', aliases=['gd'])
+    @commands.command(name='group-delete', aliases=['gd'],
+                      brief="Delete a Group",
+                      help="Delete a Group. Use \"Name Goes Here\" for names with spaces.")
     async def _group_delete(self, ctx, arg):
         if arg == "":
             return
@@ -166,7 +180,10 @@ class EmotesCog(commands.Cog):
         else:
             await ctx.message.channel.send("Group not found using the query " + arg)
 
-    @commands.command(name='group-add', aliases=['ga'])
+    @commands.command(name='group-add', aliases=['ga'],
+                      brief="Add Group Member(s)",
+                      help="Add Group Member(s). The first argument is the Group ID or Name,"
+                           + "and the rest is parsed for possible Group Members.")
     async def _group_add(self, ctx, arg, members: commands.Greedy[discord.Member]):
         if arg == "":
             return
@@ -187,7 +204,10 @@ class EmotesCog(commands.Cog):
         else:
             await ctx.message.channel.send("Group not found using the query " + arg)
 
-    @commands.command(name='group-remove', aliases=['gr'])
+    @commands.command(name='group-remove', aliases=['gr'],
+                      brief="Remove Group Member(s)",
+                      help="Remove Group Member(s). The first argument is the Group ID or Name,"
+                           + "and the rest is parsed for possible Group Members.")
     async def _group_remove(self, ctx, arg, members: commands.Greedy[discord.Member]):
         if arg == "":
             return
@@ -208,7 +228,9 @@ class EmotesCog(commands.Cog):
         else:
             await ctx.message.channel.send("Group not found using the query " + arg)
 
-    @commands.command(name='group-ping', aliases=['gp'])
+    @commands.command(name='group-ping', aliases=['gp'],
+                      brief="Ping Group Member(s)",
+                      help="Ping Group Member(s). Please use responsibly")
     async def _group_ping(self, ctx, arg):
         if arg == "":
             return
@@ -241,8 +263,10 @@ class EmotesCog(commands.Cog):
         else:
             await ctx.message.channel.send("Group not found using the query " + arg)
 
-    @commands.command(name='group-list', aliases=['gl'])
-    async def _group_ping(self, ctx):
+    @commands.command(name='group-list', aliases=['gl'],
+                      brief="List active groups",
+                      help="List active groups by Name and ID.")
+    async def _group_list(self, ctx):
         if ctx.author.bot:
             return
 
@@ -251,7 +275,7 @@ class EmotesCog(commands.Cog):
         _i = 0
         _msg = ""
         for _row in groups:
-            _msg += f"Group #{group[0]} ({group[1]})\n"
+            _msg += f"Group #{_row[0]} ({_row[1]})\n"
             _i += 1
             if _i == 20:
                 _embed = Embed(description=_msg)
@@ -262,8 +286,47 @@ class EmotesCog(commands.Cog):
             _embed = Embed(description=_msg)
             await ctx.channel.send(embed=_embed)
 
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        # This prevents any commands with local handlers being handled here in on_command_error.
+        if hasattr(ctx.command, 'on_error'):
+            return
+
+        # This prevents any cogs with an overwritten cog_command_error being handled here.
+        cog = ctx.cog
+        if cog:
+            if cog._get_overridden_method(cog.cog_command_error) is not None:
+                return
+
+        ignored = (commands.CommandNotFound,)
+
+        # Allows us to check for original exceptions raised and sent to CommandInvokeError.
+        # If nothing is found. We keep the exception passed to on_command_error.
+        error = getattr(error, 'original', error)
+
+        # Anything in ignored will return and prevent anything happening.
+        if isinstance(error, ignored):
+            return
+
+        if isinstance(error, commands.DisabledCommand):
+            await ctx.send(f'{ctx.command} has been disabled.')
+
+        elif isinstance(error, commands.NoPrivateMessage):
+            try:
+                await ctx.author.send(f'{ctx.command} can not be used in Private Messages.')
+            except discord.HTTPException:
+                pass
+
+        # For this error example we check to see where it came from...
+        elif isinstance(error, commands.BadArgument):
+            if ctx.command.qualified_name == 'tag list':  # Check if the command being invoked is 'tag list'
+                await ctx.send('I could not find that member. Please try again.')
+
         else:
-            await ctx.message.channel.send("Group not found using the query " + arg)
+            # All other Errors not returned come here. And we can just print the default TraceBack.
+            print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
+            traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+
 
 def setup(bot):
-    bot.add_cog(EmotesCog(bot))
+    bot.add_cog(PingsCog(bot))

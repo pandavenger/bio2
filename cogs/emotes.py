@@ -15,7 +15,7 @@ class EmotesCog(commands.Cog):
     def get_emote_count_all(self):
         cur = db.cursor()
         try:
-            cur.execute("SELECT * FROM emotes ORDER BY count DESC")
+            cur.execute("SELECT * FROM emotes WHERE discord_id IS NOT NULL ORDER BY count DESC")
             return cur.fetchall()
         except:
             return None
@@ -143,13 +143,14 @@ class EmotesCog(commands.Cog):
             _emoji_id = int(_row[1])
             _emoji_use = int(_row[3])
             _emoji_obj = discord.utils.get(ctx.guild.emojis, id=_emoji_id)
-            _msg += f"{_emoji_obj} has been used {_emoji_use} time(s)\n"
-            _i += 1
-            if _i == 10:
-                _embed = Embed(description=_msg)
-                await ctx.channel.send(embed=_embed)
-                _i = 0
-                _msg = ""
+            if _emoji_obj and _emoji_use > 0:
+                _msg += f"{_emoji_obj} has been used {_emoji_use} time(s)\n"
+                _i += 1
+                if _i == 20:
+                    _embed = Embed(description=_msg)
+                    await ctx.channel.send(embed=_embed)
+                    _i = 0
+                    _msg = ""
 
         if _msg:
             _embed = Embed(description=_msg)
