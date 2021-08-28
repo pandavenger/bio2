@@ -100,8 +100,6 @@ class EmotesCog(commands.Cog):
         if payload.guild_id != self.guild:
             return
 
-        print(payload)
-
         self.increment_emote(_reaction.id, _reaction.name)
 
     @commands.Cog.listener("on_raw_reaction_remove")
