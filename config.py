@@ -52,8 +52,18 @@ sql_create_group_members_table = """CREATE TABLE IF NOT EXISTS group_members (
                                 name text NOT NULL,
                                 FOREIGN KEY (group_id) REFERENCES groups (id)
                             );"""
+sql_create_channels_table = """CREATE TABLE IF NOT EXISTS channels (
+                                id integer PRIMARY KEY,
+                                server_id integer NOT NULL,
+                                channel_id integer NOT NULL,
+                                channel_name text,
+                                category_id integer,
+                                category_name text,
+                                position integer
+                            );"""
 
 create_table(db, sql_create_options_table)
 create_table(db, sql_create_emotes_table)
 create_table(db, sql_create_groups_table)
 create_table(db, sql_create_group_members_table)
+create_table(db, sql_create_channels_table)

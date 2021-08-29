@@ -17,7 +17,9 @@ cogs = [
         'cogs.textgen',
         'cogs.emotes',
         'cogs.rhinno',
-        'cogs.pings'
+        'cogs.pings',
+        'cogs.channels',
+        'cogs.roll'
        ]
 
 bot = commands.Bot(command_prefix=config["BOT"]["PREFIX"])
@@ -34,4 +36,4 @@ async def on_ready():
     await bot.change_presence(activity=discord.Game(name=random.choice(config["BOT"]["PLAYING_WITH"]), type=1, url='https://github.com/pandavenger/bio2'))
     bot.load_extension('cogs.status')
 
-bot.run(config["BOT"]["TOKEN"], bot=True, reconnect=True)
+bot.run(config["BOT"]["TEST_TOKEN"], bot=True, reconnect=True)

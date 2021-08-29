@@ -1,5 +1,6 @@
 from config import config
 import aiohttp
+import asyncio
 
 import discord
 from discord.ext import commands
@@ -13,6 +14,9 @@ class TextGenCog(commands.Cog):
     @commands.Cog.listener("on_message")
     @commands.max_concurrency(1, per=commands.BucketType.default, wait=True)
     async def text_gen(self, message):
+        def check(reaction, user):
+            return user != self.bot.user and str(reaction.emoji) == config["REACTS"]["DOWN"]
+
         _msg_text = message.clean_content.lower()
         _response = ""
 
@@ -48,10 +52,30 @@ class TextGenCog(commands.Cog):
             _response = _response.replace("fag", "friend")
             _response = _response.replace("retard", "rhubarb")
             _response = _response.replace("cancer", "garbaggio")
-            _response = _response.replace("nigger", "rigger")
 
             try:
-                await message.channel.send(_response)
+                _lines = _response.splitlines()
+                if len(_lines) > 5:
+                    _firstlines = _lines[:5]
+                    _preresponse = "\n".join(_firstlines)
+                    _premsg = await message.channel.send(_preresponse)
+                    # print(config["REACTS"]["DOWN"])
+                    await _premsg.add_reaction(config["REACTS"]["DOWN"])
+                    try:
+                        await self.bot.wait_for('reaction_add', timeout=300.0, check=check)
+                    except asyncio.TimeoutError:
+                        await _premsg.remove_reaction(config["REACTS"]["DOWN"], self.bot.user)
+                    else:
+                        await _premsg.edit(content=_response)
+
+                else:
+                    await message.channel.send(_response)
+            except discord.Forbidden as e:
+                print("Forbidden: " + e)
+            except discord.NotFound as e:
+                print("NotFound: " + e)
+            except discord.InvalidArgument as e:
+                print("Invalid: " + e)
             except Exception as e:
                 print(e)
                 await message.channel.send(config["BOT"]["ERROR_MESSAGE"])

@@ -144,11 +144,14 @@ class EmotesCog(commands.Cog):
             if _emoji_obj and _emoji_use > 0:
                 _msg += f"{_emoji_obj} has been used {_emoji_use} time(s)\n"
                 _i += 1
-                if _i == 20:
+                if _i == 15:
                     _embed = Embed(description=_msg)
                     await ctx.channel.send(embed=_embed)
                     _i = 0
                     _msg = ""
+                    if not (self.bot.is_owner(ctx.author) or ctx.channel.id == config["BOT"]["BOT_CHANNEL"]):
+                        await ctx.channel.send("Drink verification can [use the bot channel] to see full list.")
+                        return
 
         if _msg:
             _embed = Embed(description=_msg)
@@ -156,7 +159,7 @@ class EmotesCog(commands.Cog):
 
     @_emote_usage.error
     async def _emote_usage_error_handler(self, ctx, error):
-        ctx.channel.send("Hmm... looks like something went wrong. Check your formatting and try again.")
+        await ctx.channel.send("Hmm... looks like something went wrong. Check your formatting and try again.")
 
     @commands.command(name='clearemoteusage')
     @commands.is_owner()
