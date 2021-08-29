@@ -31,6 +31,8 @@ class EmotesCog(commands.Cog):
 
     def increment_emote(self, id, name):
         cur = db.cursor()
+        if not id:
+            return
         try:
             cur.execute("SELECT * FROM emotes WHERE discord_id=? AND name=?", (id, name))
             cur.fetchone()[0]
@@ -43,6 +45,8 @@ class EmotesCog(commands.Cog):
 
     def decrement_emote(self, id, name):
         cur = db.cursor()
+        if not id:
+            return
         try:
             cur.execute("SELECT * FROM emotes WHERE discord_id=? AND name=?", (id, name))
             cur.fetchone()[0]
