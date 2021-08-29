@@ -17,7 +17,9 @@ cogs = [
         'cogs.textgen',
         'cogs.emotes',
         'cogs.rhinno',
-        'cogs.pings'
+        'cogs.pings',
+        'cogs.channels',
+        'cogs.roll'
        ]
 
 bot = commands.Bot(command_prefix=config["BOT"]["PREFIX"])

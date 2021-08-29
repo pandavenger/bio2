@@ -33,7 +33,7 @@ def response(msg):
 
     generated = torch.tensor(tokenizer.encode(prompt)).unsqueeze(0)
     generated = generated.to(device)
-    maxlen = 150 + promptlen
+    maxlen = 200 + promptlen
     sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=maxlen, top_p=0.95, temperature=0.9,
                                     num_return_sequences=1)
 
