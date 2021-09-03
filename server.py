@@ -33,8 +33,8 @@ def response(msg):
 
     generated = torch.tensor(tokenizer.encode(prompt)).unsqueeze(0)
     generated = generated.to(device)
-    maxlen = 200 + promptlen
-    sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=maxlen, top_p=0.95, temperature=0.9,
+    maxlen = 300 + promptlen
+    sample_outputs = model.generate(generated, do_sample=True, top_k=200, max_length=maxlen, top_p=0.95, temperature=0.9,
                                     num_return_sequences=1)
 
     for i, sample_output in enumerate(sample_outputs):
@@ -59,21 +59,31 @@ def topten(msg):
     msg = re.search(p2, msg).group(1)
 
     prompt = "<|bos|>" + msg
-    promptlen = len(msg)-1
+    promptlen = len(msg)
+    maxlen = 200 + promptlen
 
     generated = torch.tensor(tokenizer.encode(prompt)).unsqueeze(0)
     generated = generated.to(device)
-    sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=50, top_p=0.95, temperature=0.9,
-                                    num_return_sequences=10)
+    sample_outputs = model.generate(generated, do_sample=True, top_k=100, max_length=maxlen, top_p=0.95, temperature=0.9,
+                                    num_return_sequences=30)
 
+    _counter = 1
     for i, sample_output in enumerate(sample_outputs):
+        if _counter > 10:
+            break
         line = tokenizer.decode(sample_output, skip_special_tokens=False)
         m = re.match(p, line)
         if m:
             line = m.group(1)
+            line = line[promptlen:]
             line = re.sub(r"[0-9][\.)]{1,2}", "", line)
             line = line.replace("\n", " ")
-            output += "\n" + str((i+1)) + ". " + line
+            line = line.strip()
+            if line:
+                output += "\n" + str((_counter)) + ". " + line
+                _counter += 1
+            else:
+                continue
 
     return output.strip()
 
@@ -85,7 +95,7 @@ def subvert():
 
     generated = torch.tensor(tokenizer.encode(prompt)).unsqueeze(0)
     generated = generated.to(device)
-    sample_outputs = model.generate(generated, do_sample=True, top_k=50, max_length=100, top_p=0.95, temperature=0.9,
+    sample_outputs = model.generate(generated, do_sample=True, top_k=200, max_length=100, top_p=0.95, temperature=0.8,
                                     num_return_sequences=1)
 
     for i, sample_output in enumerate(sample_outputs):

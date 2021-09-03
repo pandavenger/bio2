@@ -51,7 +51,11 @@ class TextGenCog(commands.Cog):
             _response = _response.replace("nigger", "rigger")
             _response = _response.replace("fag", "friend")
             _response = _response.replace("retard", "rhubarb")
-            _response = _response.replace("cancer", "garbaggio")
+            _response = _response.replace("autistic", "acoustic")
+            _response = _response.replace("autist", "bio2")
+            _response = _response.replace("autism", "huge penis syndrome")
+            _response = _response.replace(" rape ", " consensually have sex with ")
+            _response = _response.replace(" cancer ", " huge penis syndrome ")
 
             try:
                 _lines = _response.splitlines()
