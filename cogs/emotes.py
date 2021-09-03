@@ -153,7 +153,8 @@ class EmotesCog(commands.Cog):
                     await ctx.channel.send(embed=_embed)
                     _i = 0
                     _msg = ""
-                    if not (self.bot.is_owner(ctx.author) or ctx.channel.id == config["BOT"]["BOT_CHANNEL"]):
+                    _is_owner = await self.bot.is_owner(ctx.author)
+                    if not (_is_owner or ctx.channel.id == config["BOT"]["BOT_CHANNEL"]):
                         await ctx.channel.send("Drink verification can [use the bot channel] to see full list.")
                         return
 
