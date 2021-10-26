@@ -20,6 +20,7 @@ cogs = [
         'cogs.pings',
         'cogs.channels',
         'cogs.roll'
+		'cogs.nimitz'
        ]
 
 bot = commands.Bot(command_prefix=config["BOT"]["PREFIX"])
