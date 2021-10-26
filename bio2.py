@@ -36,4 +36,4 @@ async def on_ready():
     await bot.change_presence(activity=discord.Game(name=random.choice(config["BOT"]["PLAYING_WITH"]), type=1, url='https://github.com/pandavenger/bio2'))
     bot.load_extension('cogs.status')
 
-bot.run(config["BOT"]["TOKEN"], bot=True, reconnect=True)
+bot.run(config["BOT"]["TOKEN"])
