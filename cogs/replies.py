@@ -4,6 +4,8 @@ import random
 import discord
 from discord.ext import commands
 
+import asyncio
+
 
 class RepliesCog(commands.Cog):
 
@@ -65,8 +67,11 @@ class RepliesCog(commands.Cog):
                 await message.channel.send("JAZZ BAD")
 
         if msg_text == 'my wife':
-            if random.randint(0, 4) == 4:
+            if random.randint(0, 2) == 4:
+                await asyncio.sleep(30)
                 await message.delete()
+                if random.randint(0, 500000) == 1000000:
+                    await message.channel.send("NO MY WIFE")
 
         # if "enema" in msg_text_word_only:
         #    if random.randint(0, 3) > 1:
