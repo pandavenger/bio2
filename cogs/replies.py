@@ -56,21 +56,24 @@ class RepliesCog(commands.Cog):
                ["thanks bio2", "thanks biochem2", "thank you bio2", "thank you biochem2"]):
             await message.channel.send("you're welcome")
 
-        if "kimi no sei" in msg_text:
-            if random.randint(0, 3) > 1:
-                await message.channel.send("KIMI NO SEI")
+        # if "kimi no sei" in msg_text:
+        #    if random.randint(0, 3) > 1:
+        #        await message.channel.send("KIMI NO SEI")
 
         if "jazz" in msg_text:
             if random.randint(0, 10) == 10:
                 await message.channel.send("JAZZ BAD")
 
-        if "enema" in msg_text_word_only:
-            if random.randint(0, 3) > 1:
-                await message.channel.send("I happen to be an expert on this subject")
+        if msg_text == 'my wife':
+            await message.delete();
 
-        if "ass" in msg_text_word_only:
-            if random.randint(0, 20) == 20:
-                await message.channel.send("Well, MY ASS is famous!")
+        # if "enema" in msg_text_word_only:
+        #    if random.randint(0, 3) > 1:
+        #        await message.channel.send("I happen to be an expert on this subject")
+
+        # if "ass" in msg_text_word_only:
+        #    if random.randint(0, 20) == 20:
+        #        await message.channel.send("Well, MY ASS is famous!")
 
         if any(word in msg_text for word in ["among us", "amogus", "amoongus"]) or "sus" in msg_text_word_only:
             if random.randint(0, 10) == 10:
@@ -91,13 +94,13 @@ class RepliesCog(commands.Cog):
                 await message.channel.send("egg time")
 
         if "wilson" in msg_text_word_only:
-            if random.randint(0, 100) == 1:
+            if random.randint(0, 1000) == 1:
                 await message.channel.send("I'm going to BOMB wilson's house!")
 
         if "tiger" in msg_text_word_only:
-            if random.randint(0, 100) == 1:
+            if random.randint(0, 1000) == 1:
                 await message.channel.send("I'm going to give Tiger's feet a kissy-wissy")
 
 
-def setup(bot):
-    bot.add_cog(RepliesCog(bot))
+async def setup(bot):
+    await bot.add_cog(RepliesCog(bot))

@@ -173,5 +173,5 @@ class EmotesCog(commands.Cog):
         await ctx.channel.send("Emote Usage Stats Cleared.")
 
 
-def setup(bot):
-    bot.add_cog(EmotesCog(bot))
+async def setup(bot):
+    await bot.add_cog(EmotesCog(bot))

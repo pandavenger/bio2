@@ -17,5 +17,5 @@ class StatusCog(commands.Cog):
         await self.bot.change_presence(activity=discord.Game(name=random.choice(config["BOT"]["PLAYING_WITH"]), type=1, url='https://github.com/pandavenger/bio2'))
 
 
-def setup(bot):
-    bot.add_cog(StatusCog(bot))
+async def setup(bot):
+    await bot.add_cog(StatusCog(bot))

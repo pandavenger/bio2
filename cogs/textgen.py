@@ -1,6 +1,8 @@
 from config import config
 import aiohttp
 import asyncio
+import re
+import random
 
 import discord
 from discord.ext import commands
@@ -56,6 +58,10 @@ class TextGenCog(commands.Cog):
             _response = _response.replace("autism", "huge penis syndrome")
             _response = _response.replace(" rape ", " consensually have sex with ")
             _response = _response.replace(" cancer ", " huge penis syndrome ")
+            _response = re.sub(r'<[^>]*>', ' ', _response)
+
+            if random.randint(0, 100) > 95:
+                _response += ' desu'
 
             try:
                 _lines = _response.splitlines()
@@ -85,5 +91,5 @@ class TextGenCog(commands.Cog):
                 await message.channel.send(config["BOT"]["ERROR_MESSAGE"])
 
 
-def setup(bot):
-    bot.add_cog(TextGenCog(bot))
+async def setup(bot):
+    await bot.add_cog(TextGenCog(bot))

@@ -328,5 +328,5 @@ class PingsCog(commands.Cog):
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
 
-def setup(bot):
-    bot.add_cog(PingsCog(bot))
+async def setup(bot):
+    await bot.add_cog(PingsCog(bot))

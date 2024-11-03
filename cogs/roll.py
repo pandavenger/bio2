@@ -75,5 +75,5 @@ class RollCog(commands.Cog):
         await ctx.channel.send(_out)
 
 
-def setup(bot):
-    bot.add_cog(RollCog(bot))
+async def setup(bot):
+    await bot.add_cog(RollCog(bot))

@@ -52,5 +52,5 @@ class NimitzCog(commands.Cog):
             await make_nimitz_meme(self, ctx)
            
 
-def setup(bot):
-    bot.add_cog(NimitzCog(bot))
+async def setup(bot):
+    await bot.add_cog(NimitzCog(bot))
