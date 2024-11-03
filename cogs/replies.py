@@ -65,7 +65,8 @@ class RepliesCog(commands.Cog):
                 await message.channel.send("JAZZ BAD")
 
         if msg_text == 'my wife':
-            await message.delete();
+            if random.randint(0, 4) == 4:
+                await message.delete()
 
         # if "enema" in msg_text_word_only:
         #    if random.randint(0, 3) > 1:
